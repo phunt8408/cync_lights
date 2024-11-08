@@ -950,53 +950,55 @@ class CyncRoom:
         self._command_retry_time = 5
 
     def initialize(self):
-    """Initialization of supported features and registration of update function for all switches and subgroups in the room"""
-    self.switches_support_brightness = [
-        device_id for device_id in self.switches 
-        if device_id in self.hub.cync_switches and self.hub.cync_switches[device_id].support_brightness
-    ]
-    self.switches_support_color_temp = [
-        device_id for device_id in self.switches 
-        if device_id in self.hub.cync_switches and self.hub.cync_switches[device_id].support_color_temp
-    ]
-    self.switches_support_rgb = [
-        device_id for device_id in self.switches 
-        if device_id in self.hub.cync_switches and self.hub.cync_switches[device_id].support_rgb
-    ]
-    self.groups_support_brightness = [
-        room_id for room_id in self.subgroups 
-        if room_id in self.hub.cync_rooms and self.hub.cync_rooms[room_id].support_brightness
-    ]
-    self.groups_support_color_temp = [
-        room_id for room_id in self.subgroups 
-        if room_id in self.hub.cync_rooms and self.hub.cync_rooms[room_id].support_color_temp
-    ]
-    self.groups_support_rgb = [
-        room_id for room_id in self.subgroups 
-        if room_id in self.hub.cync_rooms and self.hub.cync_rooms[room_id].support_rgb
-    ]
-    
-    # Log missing devices for tracking
-    for device_id in self.switches:
-        if device_id not in self.hub.cync_switches:
-            _LOGGER.warning(f"Device with ID {device_id} is missing in cync_switches.")
-    
-    self.support_brightness = (len(self.switches_support_brightness) + len(self.groups_support_brightness)) > 0
-    self.support_color_temp = (len(self.switches_support_color_temp) + len(self.groups_support_color_temp)) > 0
-    self.support_rgb = (len(self.switches_support_rgb) + len(self.groups_support_rgb)) > 0
-    
-    # Register each switch's update callback
-    for switch_id in self.switches:
-        if switch_id in self.hub.cync_switches:
+        """Initialization of supported features and registration of update function for all switches and subgroups in the room"""
+        self.switches_support_brightness = [
+            device_id
+            for device_id in self.switches
+            if self.hub.cync_switches[device_id].support_brightness
+        ]
+        self.switches_support_color_temp = [
+            device_id
+            for device_id in self.switches
+            if self.hub.cync_switches[device_id].support_color_temp
+        ]
+        self.switches_support_rgb = [
+            device_id
+            for device_id in self.switches
+            if self.hub.cync_switches[device_id].support_rgb
+        ]
+        self.groups_support_brightness = [
+            room_id
+            for room_id in self.subgroups
+            if self.hub.cync_rooms[room_id].support_brightness
+        ]
+        self.groups_support_color_temp = [
+            room_id
+            for room_id in self.subgroups
+            if self.hub.cync_rooms[room_id].support_color_temp
+        ]
+        self.groups_support_rgb = [
+            room_id
+            for room_id in self.subgroups
+            if self.hub.cync_rooms[room_id].support_rgb
+        ]
+        self.support_brightness = (
+            len(self.switches_support_brightness) + len(self.groups_support_brightness)
+        ) > 0
+        self.support_color_temp = (
+            len(self.switches_support_color_temp) + len(self.groups_support_color_temp)
+        ) > 0
+        self.support_rgb = (
+            len(self.switches_support_rgb) + len(self.groups_support_rgb)
+        ) > 0
+        for switch_id in self.switches:
             self.hub.cync_switches[switch_id].register_room_updater(self.update_room)
-    
-    # Register subgroups' update callbacks
-    for subgroup in self.subgroups:
-        if subgroup in self.hub.cync_rooms:
+        for subgroup in self.subgroups:
             self.hub.cync_rooms[subgroup].register_room_updater(self.update_room)
-            self.all_room_switches = self.all_room_switches + self.hub.cync_rooms[subgroup].switches
+            self.all_room_switches = (
+                self.all_room_switches + self.hub.cync_rooms[subgroup].switches
+            )
+        for subgroup in self.subgroups:
             self.hub.cync_rooms[subgroup].all_room_switches = self.all_room_switches
-
 
     def register(self, update_callback) -> None:
         """Register callback, called when switch changes state."""
